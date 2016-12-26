@@ -2,6 +2,7 @@ import MySQLdb
 import matplotlib.pyplot as plt
 import time
 from matplotlib.font_manager import *
+import numpy as np
 
 
 class AnalyseStock:
@@ -13,10 +14,12 @@ class AnalyseStock:
         self.conn.set_character_set('utf8')
         self.cursor = self.conn.cursor()
 
-    def getStockData(self, sql, num):
+    def getStockData(self, sql, num=1):
         self.cursor.execute(sql)
 
         data = self.cursor.fetchall()
+        if not data:
+            return None
         x = []
         y = []
         d = []
@@ -31,47 +34,87 @@ class AnalyseStock:
             # 如果上一个日期和当前日期不一样的即存储lastData数据
             currentData = z
 
-            lastDateStr = time.strftime('%Y%m%d',time.localtime(round(float(lastData[1]))))
-            currentDateStr = time.strftime('%Y%m%d',time.localtime(round(float(currentData[1]))))
+            lastDateStr = time.strftime('%Y%m%d', time.localtime(round(float(lastData[1]))))
+            currentDateStr = time.strftime('%Y%m%d', time.localtime(round(float(currentData[1]))))
 
             if lastDateStr != currentDateStr:
                 x.append(float(lastData[0]) / num)
                 y.append(lastDateStr)
                 d.append((lastData, z[0]))
             lastData = currentData
-
+        if not currentData:
+            currentData = lastData
+            currentDateStr = time.strftime('%Y%m%d', time.localtime(round(float(currentData[1]))))
         x.append(float(currentData[0]) / num)
         y.append(currentDateStr)
         d.append((currentData, z[0]))
-        print(y)
-        return (x, y, d)
+        print(x)
+        return [x, y, d]
+
+    # 计算均线
+    def priceMean(self, data, daySize):
+
+        x = int(len(data) / daySize)
+        y = daySize
+        priceArr = np.asarray(data[0:x * daySize]).reshape((x, y))
+        meanData = []
+        for price in priceArr:
+            meanData.append(np.mean(price))
+
+        return meanData
+
+    # 获取所有股票的最后10天的收盘价
+    def getLastTenDayPrice(self):
+        stockPath = './../data/'
+        stockFiles = os.listdir(stockPath)
+        data = {}
+        for stockFile in stockFiles:
+            sql = "select lastPrice,updateTime from stocklist where code = '%s'" % stockFile
+            print(sql)
+            dataPrice = self.getStockData(sql, 1)
+            if not dataPrice:
+                continue
+            data[stockFile] = dataPrice[0]
+
+        return data
 
 
 if __name__ == "__main__":
     font = FontProperties(fname=os.path.expandvars(r"%windir%\fonts\simsun.ttc"), size=14)
-    sql = "select highPrice,updateTime from stocklist where code = '600545'"
+
     analyseStock = AnalyseStock()
-    x1, y1, d1 = analyseStock.getStockData(sql, 1)
 
-    sql = "select volume,updateTime from stocklist where code = '600545'"
-    x2, y2, d2 = analyseStock.getStockData(sql, 100000)
+    allPrice = analyseStock.getLastTenDayPrice()
 
-    sql = "select lastPrice,updateTime from stocklist where code = '600545'"
-    x3, y3, d3 = analyseStock.getStockData(sql, 1)
+    # print(allPrice)
+    codes = {}
+    for code in allPrice:
+        price = allPrice[code]
+        meanPrice2 = analyseStock.priceMean(price, 2)
 
-    sql = "select openPrice,updateTime from stocklist where code = '600545'"
-    x4, y4, d4 = analyseStock.getStockData(sql, 1)
+        if not price or not meanPrice2:
+            continue
+        val1 = price.pop()
+        val2 = meanPrice2.pop()
 
-    sql = "select changeRate,updateTime from stocklist where code = '600545'"
-    x5, y5, d5 = analyseStock.getStockData(sql, 1)
+        val3 = val1 - val2
+        if val3 > 0:
+            codes[val3] = code
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(x1)
-    ax.plot(x2)
-    ax.plot(x3)
-    ax.plot(x4)
-    ax.plot(x5)
-    ax.legend((u'最高价', u'交易量', u'收盘价', u'开盘价', u'换手率'), loc='best', prop=font)
-    plt.title(u'趋势图', fontproperties=font)
-    plt.show()
+    keys = codes.keys()
+    filePath = './../analyseResultData/' + time.strftime('%Y-%m-%d') + '.txt'
+
+    fp = open(filePath, 'a')
+    for key in sorted(keys, reverse=True):
+        fp.write(str(key) + '-' + str(codes[key]) + "\n")
+    fp.close()
+    print("创建文件成功!")
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.plot(x3)
+    # ax.plot(meanPrice2)
+    # ax.plot(meanPrice4)
+    # ax.legend((u'收盘价', u'最高价'), loc='best', prop=font)
+    # ax.legend((u'最高价', u'交易量', u'收盘价', u'开盘价', u'换手率'), loc='best', prop=font)
+    # plt.title(u'趋势图', fontproperties=font)
+    # plt.show()
