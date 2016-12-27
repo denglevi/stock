@@ -48,7 +48,6 @@ class AnalyseStock:
         x.append(float(currentData[0]) / num)
         y.append(currentDateStr)
         d.append((currentData, z[0]))
-        print(x)
         return [x, y, d]
 
     # 计算均线
@@ -60,7 +59,6 @@ class AnalyseStock:
         meanData = []
         for price in priceArr:
             meanData.append(np.mean(price))
-
         return meanData
 
     # 获取所有股票的最后10天的收盘价
@@ -69,7 +67,7 @@ class AnalyseStock:
         stockFiles = os.listdir(stockPath)
         data = {}
         for stockFile in stockFiles:
-            sql = "select lastPrice,updateTime from stocklist where code = '%s'" % stockFile
+            sql = "select latestPrice,updateTime from stocklist where code = '%s'" % stockFile
             print(sql)
             dataPrice = self.getStockData(sql, 1)
             if not dataPrice:
@@ -87,26 +85,43 @@ if __name__ == "__main__":
     allPrice = analyseStock.getLastTenDayPrice()
 
     # print(allPrice)
-    codes = {}
+    codesUp = {}
+    codesDown = {}
     for code in allPrice:
         price = allPrice[code]
-        meanPrice2 = analyseStock.priceMean(price, 2)
-
-        if not price or not meanPrice2:
+        meanPrice = analyseStock.priceMean(price, 4)
+        print(code)
+        print(price)
+        print(meanPrice)
+        if not price or not meanPrice:
             continue
-        val1 = price.pop()
-        val2 = meanPrice2.pop()
 
-        val3 = val1 - val2
-        if val3 > 0:
-            codes[val3] = code
+        if len(price) < 2 or len(meanPrice) < 2:
+            continue
 
-    keys = codes.keys()
+        val4 = price[-2]
+        val5 = meanPrice[-2]
+
+        val1 = price[-1]
+        val2 = meanPrice[-1]
+
+        val6 = val5 - val4
+        if val6 > 0 and val1 == val2 and val1 >= val5:
+            codesUp[val6] = code
+
+        if val6 < 0 and val1 == val2 and val1 <= val5:
+            codesDown[val6] = code
+
+    keysUp = codesUp.keys()
+    keysDown = codesDown.keys()
     filePath = './../analyseResultData/' + time.strftime('%Y-%m-%d') + '.txt'
 
     fp = open(filePath, 'a')
-    for key in sorted(keys, reverse=True):
-        fp.write(str(key) + '-' + str(codes[key]) + "\n")
+    for key in sorted(keysUp, reverse=True):
+        fp.write('up-'+str(key) + '-' + str(codesUp[key]) + "\n")
+
+    for key in sorted(keysDown):
+        fp.write('down-'+str(key) + '-' + str(codesDown[key]) + "\n")
     fp.close()
     print("创建文件成功!")
     # fig = plt.figure()
