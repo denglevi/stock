@@ -3,6 +3,7 @@ import os
 import MySQLdb
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 
 class readCSVData:
@@ -21,29 +22,31 @@ class readCSVData:
 
         return self.cursor.execute(sql)
 
-    def importData(self):
-        dataPath = './../tradeData/'
-
+    def importData(self, dataPath,dataFile=''):
         files = os.listdir(dataPath)
-        tables = self.cursor.execute('show tables;')
+        self.cursor.execute('show tables;')
         tables = self.cursor.fetchall()
         tables = np.asarray(tables).ravel()
         for file in files:
             fileName = file.lower().replace('.csv', '')
+            if dataFile != '':
+                if dataFile != fileName:
+                    continue
             if fileName in tables:
                 self.cursor.execute('drop table %s' % fileName)
             res = self.createTable(fileName)
             if res != 0:
                 print("创建数据表%s失败", fileName)
                 continue
-            fp = open('./../tradeData/' + file, 'r', encoding='utf-8')
+            fp = open(os.path.join(dataPath, file), 'r', encoding='utf-8')
             lines = fp.readlines()
             data = lines[1:]
             for x in data:
                 x = x.strip().split(',')
                 sql = "insert into %s (cDate,openPrice,highPrice,lowPrice,closePrice,volume) values ('%s','%s','%s','%s','%s','%s');" % (
                     fileName,
-                    x[1].replace('/', '-').replace('"',''), x[2].replace('"',''), x[3].replace('"',''), x[4].replace('"',''), x[5].replace('"',''), x[6].replace('"',''))
+                    x[1].replace('/', '-').replace('"', ''), x[2].replace('"', ''), x[3].replace('"', ''),
+                    x[4].replace('"', ''), x[5].replace('"', ''), x[6].replace('"', ''))
                 print(sql)
                 self.cursor.execute(sql)
             fp.close()
@@ -87,8 +90,77 @@ class readCSVData:
         ax.legend((u'meanPrice', u'price'), loc='best')
         plt.show()
 
+    def getLowHighPrice(self, name, days):
+
+        sql = 'select closePrice from %s order by id desc limit 100' % name
+        self.cursor.execute(sql)
+        res = self.cursor.fetchall()
+        x1 = int(len(res) / days)
+        y1 = days
+        priceArr = np.asarray(res[0:x1 * days]).reshape((x1, y1))
+        highPrice = []
+        lowPrice = []
+        meanPrice = []
+        price = np.asarray(res[0:x1])
+        for x in priceArr:
+            y = []
+            for xx in x:
+                y.append(float(xx))
+            highPrice.append(np.max(y))
+            lowPrice.append(np.min(y))
+            meanPrice.append(np.mean(y))
+
+        return highPrice, lowPrice, price, meanPrice
+
 
 if __name__ == '__main__':
-    readCSVData = readCSVData()
-    # readCSVData.importData()
-    readCSVData.showPriceInfo('sz002003', 4)
+
+    argv = sys.argv
+    if len(argv) < 2:
+        print('缺少参数!')
+        exit()
+
+    if argv[1] == 'readCSV':
+        dataPath = argv[2]
+        readCSVData = readCSVData()
+
+        if len(argv) > 3:
+            readCSVData.importData(dataPath,dataFile=argv[3])
+        else:
+            readCSVData.importData(dataPath)
+
+    if argv[1] == 'importData':
+        readCSVData = readCSVData()
+        if len(argv) < 4:
+            print('缺少参数!')
+
+        code = argv[2]
+        days = int(argv[3])
+        readCSVData.showPriceInfo(code, days)
+
+    if argv[1] == 'highlow':
+        readCSVData = readCSVData()
+        if len(argv) < 4:
+            print('缺少参数!')
+            exit()
+
+        code = argv[2]
+        days = int(argv[3])
+        highPrice, lowPrice, price, meanPrice = readCSVData.getLowHighPrice(code, days)
+
+        print(highPrice)
+        print(lowPrice)
+        print(meanPrice)
+        print(price)
+
+        fg = plt.figure()
+        ax = fg.add_subplot(111)
+
+        ax.plot(highPrice[::-1])
+        ax.plot(lowPrice[::-1])
+        ax.plot(meanPrice[::-1])
+        ax.plot(price[::-1])
+
+        ax.legend((u'highPrice', u'lowPrice', u'meanPrice', u'price'), loc='best')
+        plt.title(code)
+        plt.show()

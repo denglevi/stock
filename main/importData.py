@@ -69,6 +69,7 @@ class ImportDataToDB:
         return self.cursor.execute(sql)
 
     def readStockPriceInfo(self):
+        self.cursor.execute("truncate table stocklist;")
         dirPath = './../data/'
         dirs = os.listdir(dirPath)
         for dirStockName in dirs:

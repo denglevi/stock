@@ -55,7 +55,9 @@ class AnalyseStock:
 
         x = int(len(data) / daySize)
         y = daySize
-        priceArr = np.asarray(data[0:x * daySize]).reshape((x, y))
+        l = len(data) - (x * daySize)
+
+        priceArr = np.asarray(data[l:]).reshape((x, y))
         meanData = []
         for price in priceArr:
             meanData.append(np.mean(price))
@@ -118,11 +120,13 @@ if __name__ == "__main__":
 
     fp = open(filePath, 'a')
     for key in sorted(keysUp, reverse=True):
-        fp.write('up-'+str(key) + '-' + str(codesUp[key]) + "\n")
+        fp.write('up-' + str(key) + '-' + str(codesUp[key]) + "\n")
 
     for key in sorted(keysDown):
-        fp.write('down-'+str(key) + '-' + str(codesDown[key]) + "\n")
+        fp.write('down-' + str(key) + '-' + str(codesDown[key]) + "\n")
     fp.close()
+    print(codesUp)
+    print(codesDown)
     print("创建文件成功!")
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
