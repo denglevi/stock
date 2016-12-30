@@ -63,6 +63,16 @@ class AnalyseStock:
             meanData.append(np.mean(price))
         return meanData
 
+    # 判断是否长期处于低价位
+    def isLowestPrice(self, data):
+        lowPrice = np.min(data)
+        meanPrice = np.mean(data)
+
+        if data[-1] < lowPrice and data[-1] < meanPrice:
+            return data[-1]
+        else:
+            return None
+
     # 获取所有股票的最后10天的收盘价
     def getLastTenDayPrice(self):
         stockPath = './../data/'
@@ -89,9 +99,14 @@ if __name__ == "__main__":
     # print(allPrice)
     codesUp = {}
     codesDown = {}
+    lowestPrice = {}
     for code in allPrice:
         price = allPrice[code]
-        meanPrice = analyseStock.priceMean(price, 4)
+        meanPrice = analyseStock.priceMean(price, 5)
+        res = analyseStock.isLowestPrice(price)
+        if analyseStock.isLowestPrice(price):
+            lowestPrice[code] = res
+
         print(code)
         print(price)
         print(meanPrice)
@@ -119,14 +134,20 @@ if __name__ == "__main__":
     filePath = './../analyseResultData/' + time.strftime('%Y-%m-%d') + '.txt'
 
     fp = open(filePath, 'a')
+    fp.write("====================%s====================\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     for key in sorted(keysUp, reverse=True):
         fp.write('up-' + str(key) + '-' + str(codesUp[key]) + "\n")
 
     for key in sorted(keysDown):
         fp.write('down-' + str(key) + '-' + str(codesDown[key]) + "\n")
+
+    for key in lowestPrice:
+        fp.write('lowestPrice-' + str(key) + '-' + str(lowestPrice[key]) + "\n")
+
     fp.close()
     print(codesUp)
     print(codesDown)
+    print(lowestPrice)
     print("创建文件成功!")
     # fig = plt.figure()
     # ax = fig.add_subplot(111)

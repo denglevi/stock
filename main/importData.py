@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 import MySQLdb
 import os
+import click
 
-
-class ImportDataToDB:
+class ImportDataToDB():
     conn = None
     cursor = None
 
@@ -107,6 +107,7 @@ class ImportDataToDB:
               '"%s","%s","%s","%s","%s");' % (data[1], data[0],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],data[13],data[10],data[11])
         print(sql)
         return self.cursor.execute(sql)
+
 if __name__ == '__main__':
     importData = ImportDataToDB()
     # importData.readInfoData()
