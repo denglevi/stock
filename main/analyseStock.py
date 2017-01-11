@@ -124,10 +124,10 @@ if __name__ == "__main__":
 
         val6 = val5 - val4
         if val6 > 0 and val1 == val2 and val1 >= val5:
-            codesUp[val6] = code
+            codesUp[val6] = (code,val1)
 
         if val6 < 0 and val1 == val2 and val1 <= val5:
-            codesDown[val6] = code
+            codesDown[val6] = (code,val1)
 
     keysUp = codesUp.keys()
     keysDown = codesDown.keys()
@@ -136,10 +136,10 @@ if __name__ == "__main__":
     fp = open(filePath, 'a')
     fp.write("====================%s====================\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     for key in sorted(keysUp, reverse=True):
-        fp.write('up-' + str(key) + '-' + str(codesUp[key]) + "\n")
+        fp.write('up-' + str(key) + '-' + str(codesUp[key][0]) +  '-'+str(codesUp[key][1]) +"\n")
 
     for key in sorted(keysDown):
-        fp.write('down-' + str(key) + '-' + str(codesDown[key]) + "\n")
+        fp.write('down-' + str(key) + '-' + str(codesDown[key][0]) +  '-'+str(codesDown[key][1]) +"\n")
 
     for key in lowestPrice:
         fp.write('lowestPrice-' + str(key) + '-' + str(lowestPrice[key]) + "\n")
