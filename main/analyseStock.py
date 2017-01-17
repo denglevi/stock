@@ -1,8 +1,9 @@
 import MySQLdb
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
-from matplotlib.font_manager import *
+#from matplotlib.font_manager import *
 import numpy as np
+import os
 
 
 class AnalyseStock:
@@ -10,7 +11,7 @@ class AnalyseStock:
     cursor = None
 
     def __init__(self):
-        self.conn = MySQLdb.connect(user="root", passwd="", host="127.0.0.1", db="stock2")
+        self.conn = MySQLdb.connect(user="root", passwd="123456", host="127.0.0.1", db="stock")
         self.conn.set_character_set('utf8')
         self.cursor = self.conn.cursor()
 
@@ -80,7 +81,7 @@ class AnalyseStock:
         data = {}
         for stockFile in stockFiles:
             sql = "select latestPrice,updateTime from stocklist where code = '%s'" % stockFile
-            print(sql)
+            #print(sql)
             dataPrice = self.getStockData(sql, 1)
             if not dataPrice:
                 continue
@@ -90,7 +91,7 @@ class AnalyseStock:
 
 
 if __name__ == "__main__":
-    font = FontProperties(fname=os.path.expandvars(r"%windir%\fonts\simsun.ttc"), size=14)
+    #font = FontProperties(fname=os.path.expandvars(r"%windir%\fonts\simsun.ttc"), size=14)
 
     analyseStock = AnalyseStock()
 
@@ -107,9 +108,9 @@ if __name__ == "__main__":
         if analyseStock.isLowestPrice(price):
             lowestPrice[code] = res
 
-        print(code)
-        print(price)
-        print(meanPrice)
+        #print(code)
+        #print(price)
+        #print(meanPrice)
         if not price or not meanPrice:
             continue
 
@@ -145,9 +146,9 @@ if __name__ == "__main__":
         fp.write('lowestPrice-' + str(key) + '-' + str(lowestPrice[key]) + "\n")
 
     fp.close()
-    print(codesUp)
-    print(codesDown)
-    print(lowestPrice)
+    #print(codesUp)
+    #print(codesDown)
+    #print(lowestPrice)
     print("创建文件成功!")
     # fig = plt.figure()
     # ax = fig.add_subplot(111)

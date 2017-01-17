@@ -2,13 +2,16 @@
 import MySQLdb
 import os
 import click
+import chardet
+import codecs
+
 
 class ImportDataToDB():
     conn = None
     cursor = None
 
     def __init__(self):
-        self.conn = MySQLdb.connect(user="root", passwd="", host="127.0.0.1", db="stock2")
+        self.conn = MySQLdb.connect(user="root", passwd="123456", host="127.0.0.1", db="stock")
         self.conn.set_character_set('utf8')
         self.cursor = self.conn.cursor()
 
@@ -70,7 +73,7 @@ class ImportDataToDB():
 
     def readStockPriceInfo(self):
         self.cursor.execute("truncate table stocklist;")
-        dirPath = './../data/'
+        dirPath = '../data/'
         dirs = os.listdir(dirPath)
         for dirStockName in dirs:
             stockDirPath = os.path.join(dirPath,dirStockName)
@@ -85,11 +88,14 @@ class ImportDataToDB():
                     filesPath = os.listdir(filesPath)
                     for filePath in filesPath:
                         filePath = os.path.join(stockMonthDir,stockDayFile,filePath)
-                        with open(filePath,"r") as fp:
-                            info = fp.readlines()
-                            for x in info:
-                                data = x.strip().split('-')
-                                self.inserStockDayPrice(data)
+                        try:
+                            with open(filePath,"r") as fp:
+                                info = fp.readlines()
+                                for x in info:
+                                    data = x.strip().split('-')
+                                    self.inserStockDayPrice(data)
+                        except Exception as e:
+                            print("except:%s\nfileName:%s"%(e,filePath))
         self.cursor.close()
         self.conn.commit()
         self.conn.close()
@@ -98,14 +104,14 @@ class ImportDataToDB():
     def inserStockDayPrice(self,data):
         # print(data)
         if len(data) == 15:
-            sql = 'insert into stockList(name,code,latestPrice,rangeNum,lastPrice,openPrice,highPrice,' \
+            sql = 'insert into stocklist(name,code,latestPrice,rangeNum,lastPrice,openPrice,highPrice,' \
               'lowPrice,volume,volumeNum,updateTime,changeRate,amp) values ("%s","%s","%s","%s","%s","%s","%s","%s",' \
               '"%s","%s","%s","%s","%s");' % (data[1], data[0],data[2],data[4],data[5],data[6],data[7],data[8],data[9],data[10],data[14],data[11],data[12])
         else:
-            sql = 'insert into stockList(name,code,latestPrice,rangeNum,lastPrice,openPrice,highPrice,' \
+            sql = 'insert into stocklist(name,code,latestPrice,rangeNum,lastPrice,openPrice,highPrice,' \
               'lowPrice,volume,volumeNum,updateTime,changeRate,amp) values ("%s","%s","%s","%s","%s","%s","%s","%s",' \
               '"%s","%s","%s","%s","%s");' % (data[1], data[0],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],data[13],data[10],data[11])
-        print(sql)
+        #print(sql)
         return self.cursor.execute(sql)
 
 if __name__ == '__main__':

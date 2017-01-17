@@ -18,7 +18,8 @@ class HexunSpider(scrapy.Spider):
         m = time.strftime('%m')
         d = time.strftime('%d')
 
-        dataPath = 'E:\Project\stock/data/'
+        #dataPath = 'E:\Project\stock/data/'
+        dataPath = '/usr/local/stock/data/'
 
         if not os.path.exists(dataPath):
             os.mkdir(dataPath)
