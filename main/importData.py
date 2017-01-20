@@ -19,7 +19,7 @@ class ImportDataToDB():
         dirPath = './../data/'
         files = os.listdir(dirPath)
         for file in files:
-            sql = "select * from stockInfo where code = '%s'" % file
+            sql = "select * from stockinfo where code = '%s'" % file
             self.cursor.execute(sql)
             stock = self.cursor.fetchone()
             if not stock:
@@ -36,17 +36,17 @@ class ImportDataToDB():
             return
         with open(filePath, "r") as fp:
             data = fp.readlines()
-        val = []
+        val = {}
         for x in data:
             x = x.strip()
             line = x.split('-')
-            val.append(line[1])
+            val[line[0]] = line[1]
 
-        sql = 'insert into stockInfo(name,code,shareholder,institutional,deviation,district,linkUrl,' \
+        sql = 'insert into stockinfo(name,code,shareholder,institutional,deviation,district,linkUrl,' \
               'lootchips,iratia,maincost,priceLimit,updateTime,cprice) values ("%s","%s","%s","%s","%s","%s","%s","%s",' \
-              '"%s","%s","%s","%s","%s");' % (val[1], file, val[0], val[2], \
-                                              val[4], val[6], val[7], \
-                                              val[10], val[12], val[13], val[15], val[17], val[8])
+              '"%s","%s","%s","%s","%s");' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
+                                              val['deviation'], val['district'], val['StockLink'], \
+                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], val['Cprice'])
         return self.cursor.execute(sql)
 
     def updateStock(self, dirPath, file,stock):
@@ -55,20 +55,20 @@ class ImportDataToDB():
             return False
         with open(filePath, "r") as fp:
             data = fp.readlines()
-        val = []
+        val = {}
         for x in data:
             x = x.strip()
             line = x.split('-')
-            val.append(line[1])
+            val[line[0]] = line[1]
 
-        if(val[17] == stock[12]):
+        if(val['time'] == stock[12]):
             return False
 
 
-        sql = 'update stockInfo set name="%s",code="%s",shareholder="%s",institutional="%s",deviation="%s",district="%s",linkUrl="%s",' \
-              'lootchips="%s",iratia="%s",maincost="%s",priceLimit="%s",updateTime="%s",cprice="%s" where code="%s";' % (val[1], file, val[0], val[2], \
-               val[4], val[6], val[7], \
-               val[10], val[12], val[13], val[15], val[17], val[8],file)
+        sql = 'update stockinfo set name="%s",code="%s",shareholder="%s",institutional="%s",deviation="%s",district="%s",linkUrl="%s",' \
+              'lootchips="%s",iratia="%s",maincost="%s",priceLimit="%s",updateTime="%s",cprice="%s" where code="%s";' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
+                                              val['deviation'], val['district'], val['StockLink'], \
+                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], val['Cprice'],file)
         return self.cursor.execute(sql)
 
     def readStockPriceInfo(self):
@@ -116,5 +116,5 @@ class ImportDataToDB():
 
 if __name__ == '__main__':
     importData = ImportDataToDB()
-    # importData.readInfoData()
-    importData.readStockPriceInfo()
+    importData.readInfoData()
+    # importData.readStockPriceInfo()

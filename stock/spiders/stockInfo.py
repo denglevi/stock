@@ -60,8 +60,8 @@ class StockinfoSpider(scrapy.Spider):
 
     def createInfoFile(self, code, info):
 
-        #basePath = 'E:\Project\stock/data/'
-        basePath = '/usr/local/stock/data/'
+        basePath = 'E:\Project\stock/data/'
+        # basePath = '/usr/local/stock/data/'
         if not os.path.exists(basePath):
             os.mkdir(basePath)
 
