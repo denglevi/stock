@@ -88,3 +88,9 @@ ROBOTSTXT_OBEY = False
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+# DOWNLOADER_MIDDLEWARES = {
+# 'stock.middlewares.middleware.JavaScriptMiddleware':543,#键为中间件类的路径，值为中间件的顺序
+# 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware':None,#禁止内置的中间件
+# }
