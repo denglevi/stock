@@ -1,19 +1,22 @@
 # -*- coding:utf-8 -*-
-import MySQLdb
 import os
 import click
 import chardet
 import codecs
 
+from main.myDBConnector import MyDBConnector
+
 
 class ImportDataToDB():
-    conn = None
+    myConn = None
     cursor = None
+    conn = None
 
     def __init__(self):
-        self.conn = MySQLdb.connect(user="root", passwd="123456", host="127.0.0.1", db="stock")
-        self.conn.set_character_set('utf8')
-        self.cursor = self.conn.cursor()
+        self.myConn = MyDBConnector()
+        self.myConn.conn.set_character_set('utf8')
+        self.conn = self.myConn.conn
+        self.cursor = self.myConn.cursor
 
     def readInfoData(self):
         dirPath = './../data/'
@@ -116,5 +119,5 @@ class ImportDataToDB():
 
 if __name__ == '__main__':
     importData = ImportDataToDB()
-    importData.readInfoData()
-    # importData.readStockPriceInfo()
+    #importData.readInfoData()
+    importData.readStockPriceInfo()
