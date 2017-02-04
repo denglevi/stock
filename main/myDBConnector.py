@@ -5,8 +5,8 @@ import MySQLdb
 class MyDBConnector:
     host = '127.0.0.1'
     username = 'root'
-    password = ''
-    db = 'stock2'
+    password = 'denglevi5200'
+    db = 'stock'
     conn = None
     cursor = None
 
