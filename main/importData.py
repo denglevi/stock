@@ -3,7 +3,7 @@ import os
 import click
 import chardet
 import codecs
-import myDBConnector
+from myDBConnector import MyDBConnector
 
 class ImportDataToDB():
     myConn = None
