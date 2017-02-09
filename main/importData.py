@@ -26,33 +26,12 @@ class ImportDataToDB():
             self.cursor.execute(sql)
             stock = self.cursor.fetchone()
             if not stock:
-                latestPrice = self.getLatestPrice(file)
-                self.insertStock(dirPath, file,latestPrice)
+                self.insertStock(dirPath, file)
             else:
-                latestPrice = self.getLatestPrice(file)
-                self.updateStock(dirPath, file,stock,latestPrice)
+                self.updateStock(dirPath, file,stock)
         self.cursor.close()
         self.conn.commit()
         self.conn.close()
-
-    def insertStock(self, dirPath, file,latestPrice):
-        filePath = dirPath + file + '/info.txt'
-        if not os.path.exists(filePath):
-            return
-        with open(filePath, "r") as fp:
-            data = fp.readlines()
-        val = {}
-        for x in data:
-            x = x.strip()
-            line = x.split('-')
-            val[line[0]] = line[1]
-        # val['Cprice']
-        sql = 'insert into stockinfo(name,code,shareholder,institutional,deviation,district,linkUrl,' \
-              'lootchips,iratia,maincost,priceLimit,updateTime,cprice) values ("%s","%s","%s","%s","%s","%s","%s","%s",' \
-              '"%s","%s","%s","%s","%s");' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
-                                              val['deviation'], val['district'], val['StockLink'], \
-                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], latestPrice)
-        return self.cursor.execute(sql)
 
     def getLatestPrice(self,code):
 
@@ -72,7 +51,27 @@ class ImportDataToDB():
         print(data[2])
         return data[2]
 
-    def updateStock(self, dirPath, file,stock,latestPrice):
+    def insertStock(self, dirPath, file):
+        filePath = dirPath + file + '/info.txt'
+        if not os.path.exists(filePath):
+            return
+        with open(filePath, "r") as fp:
+            data = fp.readlines()
+        val = {}
+        for x in data:
+            x = x.strip()
+            line = x.split('-')
+            val[line[0]] = line[1]
+        # val['Cprice']
+        latestPrice = self.getLatestPrice(file)
+        sql = 'insert into stockinfo(name,code,shareholder,institutional,deviation,district,linkUrl,' \
+              'lootchips,iratia,maincost,priceLimit,updateTime,cprice) values ("%s","%s","%s","%s","%s","%s","%s","%s",' \
+              '"%s","%s","%s","%s","%s");' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
+                                              val['deviation'], val['district'], val['StockLink'], \
+                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], latestPrice)
+        return self.cursor.execute(sql)
+
+    def updateStock(self, dirPath, file,stock):
         filePath = dirPath + file + '/info.txt'
         if not os.path.exists(filePath):
             return False
@@ -87,11 +86,12 @@ class ImportDataToDB():
         if(val['time'] == stock[12]):
             return False
 
-
+        latestPrice = self.getLatestPrice(file)
         sql = 'update stockinfo set name="%s",code="%s",shareholder="%s",institutional="%s",deviation="%s",district="%s",linkUrl="%s",' \
               'lootchips="%s",iratia="%s",maincost="%s",priceLimit="%s",updateTime="%s",cprice="%s" where code="%s";' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
                                               val['deviation'], val['district'], val['StockLink'], \
                                               val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], latestPrice,file)
+        print(sql)
         return self.cursor.execute(sql)
 
     def readStockPriceInfo(self):
