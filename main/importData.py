@@ -61,6 +61,7 @@ class ImportDataToDB():
         d = time.strftime('%d')
 
         filePath = os.path.join(self.dataDir,code,y,m,d+'.txt')
+        print(filePath)
         if not os.path.exists(filePath):
             return 0
         with open(filePath, "r") as fp:
