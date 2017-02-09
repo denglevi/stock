@@ -3,12 +3,14 @@ import os
 import click
 import chardet
 import codecs
+import time
 from myDBConnector import MyDBConnector
 
 class ImportDataToDB():
     myConn = None
     cursor = None
     conn = None
+    dataDir = './../data/'
 
     def __init__(self):
         self.myConn = MyDBConnector()
@@ -24,14 +26,16 @@ class ImportDataToDB():
             self.cursor.execute(sql)
             stock = self.cursor.fetchone()
             if not stock:
-                self.insertStock(dirPath, file)
+                latestPrice = self.getLatestPrice(file)
+                self.insertStock(dirPath, file,latestPrice)
             else:
-                self.updateStock(dirPath, file,stock)
+                latestPrice = self.getLatestPrice(file)
+                self.updateStock(dirPath, file,stock,latestPrice)
         self.cursor.close()
         self.conn.commit()
         self.conn.close()
 
-    def insertStock(self, dirPath, file):
+    def insertStock(self, dirPath, file,latestPrice):
         filePath = dirPath + file + '/info.txt'
         if not os.path.exists(filePath):
             return
@@ -42,15 +46,30 @@ class ImportDataToDB():
             x = x.strip()
             line = x.split('-')
             val[line[0]] = line[1]
-
+        # val['Cprice']
         sql = 'insert into stockinfo(name,code,shareholder,institutional,deviation,district,linkUrl,' \
               'lootchips,iratia,maincost,priceLimit,updateTime,cprice) values ("%s","%s","%s","%s","%s","%s","%s","%s",' \
               '"%s","%s","%s","%s","%s");' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
                                               val['deviation'], val['district'], val['StockLink'], \
-                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], val['Cprice'])
+                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], latestPrice)
         return self.cursor.execute(sql)
 
-    def updateStock(self, dirPath, file,stock):
+    def getLatestPrice(self,code):
+
+        y = time.strftime('%Y')
+        m = time.strftime('%m')
+        d = time.strftime('%d')
+
+        filePath = os.path.join(self.dataDir,code,y,m,d)
+
+        with open(filePath, "r") as fp:
+            info = fp.readlines()
+            x = info.pop()
+            data = x.strip().split('-')
+
+        return data[2]
+
+    def updateStock(self, dirPath, file,stock,latestPrice):
         filePath = dirPath + file + '/info.txt'
         if not os.path.exists(filePath):
             return False
@@ -69,7 +88,7 @@ class ImportDataToDB():
         sql = 'update stockinfo set name="%s",code="%s",shareholder="%s",institutional="%s",deviation="%s",district="%s",linkUrl="%s",' \
               'lootchips="%s",iratia="%s",maincost="%s",priceLimit="%s",updateTime="%s",cprice="%s" where code="%s";' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
                                               val['deviation'], val['district'], val['StockLink'], \
-                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], val['Cprice'],file)
+                                              val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], latestPrice,file)
         return self.cursor.execute(sql)
 
     def readStockPriceInfo(self):
@@ -117,5 +136,5 @@ class ImportDataToDB():
 
 if __name__ == '__main__':
     importData = ImportDataToDB()
-    #importData.readInfoData()
-    importData.readStockPriceInfo()
+    importData.readInfoData()
+    #importData.readStockPriceInfo()
