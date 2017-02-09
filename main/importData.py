@@ -60,8 +60,9 @@ class ImportDataToDB():
         m = time.strftime('%m')
         d = time.strftime('%d')
 
-        filePath = os.path.join(self.dataDir,code,y,m,d)
-
+        filePath = os.path.join(self.dataDir,code,y,m,d+'.txt')
+        if not os.path.exists(filePath):
+            return 0
         with open(filePath, "r") as fp:
             info = fp.readlines()
             x = info.pop()
