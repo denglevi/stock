@@ -92,6 +92,7 @@ class ImportDataToDB():
               'lootchips="%s",iratia="%s",maincost="%s",priceLimit="%s",updateTime="%s",cprice="%s" where code="%s";' % (val['Stockname'], file, val['shareholders'], val['Institutional'], \
                                               val['deviation'], val['district'], val['StockLink'], \
                                               val['lootchips'], val['Iratio'], val['maincost'], val['Pricelimit'], val['time'], latestPrice,file)
+        print(sql)
         return self.cursor.execute(sql)
 
     def readStockPriceInfo(self):
