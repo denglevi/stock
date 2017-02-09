@@ -68,6 +68,7 @@ class ImportDataToDB():
             x = info.pop()
             data = x.strip().split('-')
 
+        print(data[2])
         return data[2]
 
     def updateStock(self, dirPath, file,stock,latestPrice):
