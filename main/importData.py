@@ -39,7 +39,9 @@ class ImportDataToDB():
         m = time.strftime('%m')
         d = time.strftime('%d')
 
-        filePath = os.path.join(self.dataDir,code,y,m,d+'.txt')
+        filePath = os.path.join(self.dataDir,code,y,m)
+        fileList = os.listdir(filePath)
+        filePath = os.path.join(filePath,fileList.pop)
         print(filePath)
         if not os.path.exists(filePath):
             return 0
@@ -83,8 +85,8 @@ class ImportDataToDB():
             line = x.split('-')
             val[line[0]] = line[1]
 
-        if(val['time'] == stock[12]):
-            return False
+        # if val['time'] == stock[12]:
+        #     return False
 
         latestPrice = self.getLatestPrice(file)
         sql = 'update stockinfo set name="%s",code="%s",shareholder="%s",institutional="%s",deviation="%s",district="%s",linkUrl="%s",' \
