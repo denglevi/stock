@@ -41,7 +41,7 @@ class ImportDataToDB():
 
         filePath = os.path.join(self.dataDir,code,y,m)
         fileList = os.listdir(filePath)
-        filePath = os.path.join(filePath,fileList.pop)
+        filePath = os.path.join(filePath,fileList.pop())
         print(filePath)
         if not os.path.exists(filePath):
             return 0
